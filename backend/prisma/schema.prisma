@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum SurveyType {
+  PICK_N
+}
+
+enum ParticipationStatus {
+  NOT_STARTED
+  STARTED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  groupMembers       GroupMember[]
+  participations     SurveyParticipation[]
+  reviewedParticipations SurveyParticipation[] @relation("ReviewedBy")
+  auditEvents        AuditEvent[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Group {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  members         GroupMember[]
+  surveyReleases  SurveyRelease[]
+
+  @@index([name])
+}
+
+model GroupMember {
+  id        String   @id @default(uuid())
+  userId    String
+  groupId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@index([userId])
+  @@index([groupId])
+}
+
+model Survey {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  surveyType  SurveyType @default(PICK_N)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  options  SurveyOption[]
+  releases SurveyRelease[]
+
+  @@index([name])
+}
+
+model SurveyRelease {
+  id           String   @id @default(uuid())
+  surveyId     String
+  groupId      String
+  releaseOrder Int
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  survey        Survey                @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  group         Group                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  participations SurveyParticipation[]
+  optionCapacities OptionCapacity[]
+
+  @@unique([surveyId, groupId])
+  @@index([surveyId])
+  @@index([groupId])
+  @@index([releaseOrder])
+}
+
+model SurveyOption {
+  id         String   @id @default(uuid())
+  surveyId   String
+  optionName String
+  optionData Json?
+  createdAt  DateTime @default(now())
+
+  survey     Survey           @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  selections SurveySelection[]
+  capacities OptionCapacity[]
+  holds      OptionHold[]
+
+  @@index([surveyId])
+}
+
+model SurveyParticipation {
+  id              String              @id @default(uuid())
+  userId          String
+  surveyReleaseId String
+  status          ParticipationStatus @default(NOT_STARTED)
+  startedAt       DateTime?
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  surveyRelease SurveyRelease     @relation(fields: [surveyReleaseId], references: [id], onDelete: Cascade)
+  reviewer      User?             @relation("ReviewedBy", fields: [reviewedBy], references: [id])
+  selections    SurveySelection[]
+  holds         OptionHold[]
+
+  @@unique([userId, surveyReleaseId])
+  @@index([userId])
+  @@index([surveyReleaseId])
+  @@index([status])
+}
+
+model SurveySelection {
+  id              String   @id @default(uuid())
+  participationId String
+  optionId        String
+  selectionOrder  Int
+  createdAt       DateTime @default(now())
+
+  participation SurveyParticipation @relation(fields: [participationId], references: [id], onDelete: Cascade)
+  option        SurveyOption        @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([participationId, optionId])
+  @@index([participationId])
+  @@index([optionId])
+}
+
+model OptionCapacity {
+  id                 String   @id @default(uuid())
+  optionId           String
+  surveyReleaseId    String
+  maxCapacity        Int
+  currentUtilization Int      @default(0)
+
+  option        SurveyOption  @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  surveyRelease SurveyRelease @relation(fields: [surveyReleaseId], references: [id], onDelete: Cascade)
+
+  @@unique([optionId, surveyReleaseId])
+  @@index([optionId])
+  @@index([surveyReleaseId])
+}
+
+model OptionHold {
+  id              String   @id @default(uuid())
+  optionId        String
+  participationId String
+  heldAt          DateTime @default(now())
+  expiresAt       DateTime
+  isReleased      Boolean  @default(false)
+
+  option        SurveyOption        @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  participation SurveyParticipation @relation(fields: [participationId], references: [id], onDelete: Cascade)
+
+  @@index([optionId])
+  @@index([participationId])
+  @@index([expiresAt])
+  @@index([isReleased])
+}
+
+model AuditEvent {
+  id         String   @id @default(uuid())
+  entityType String
+  entityId   String
+  userId     String?
+  eventType  String
+  oldState   Json?
+  newState   Json?
+  metadata   Json?
+  timestamp  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entityType])
+  @@index([entityId])
+  @@index([userId])
+  @@index([timestamp])
+}
