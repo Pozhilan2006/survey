@@ -14,19 +14,30 @@
 - Updated `@nestjs/config` from `^3.2.0` to `^4.0.0`
 - Added `--legacy-peer-deps` flag to Render build command
 
+## Issue 3: Prisma Installing v7.x Instead of v5.x ✅ FIXED
+**Error**: `Prisma CLI Version : 7.3.0` (even though package.json specified `^5.22.0`)
+
+**Root Cause**: The `^` in version numbers allows npm to install newer minor/patch versions. With `legacy-peer-deps`, npm was installing the latest compatible version (7.x).
+
+**Solution**: Lock Prisma to exact version without caret
+- Changed `"prisma": "^5.22.0"` to `"prisma": "5.22.0"`
+- Changed `"@prisma/client": "^5.22.0"` to `"@prisma/client": "5.22.0"`
+- Regenerated package-lock.json with exact versions
+- Used `npm install --save-exact` to ensure no version ranges
+
 ## Current Configuration
 
-### package.json Dependencies
+### package.json Dependencies (Final)
 ```json
 {
   "@nestjs/common": "^11.0.1",
   "@nestjs/config": "^4.0.0",
   "@nestjs/core": "^11.0.1",
-  "@nestjs/jwt": "^10.2.0",
-  "@nestjs/passport": "^10.0.3",
+  "@nestjs/jwt": "^11.0.0",
+  "@nestjs/passport": "^11.0.0",
   "@nestjs/platform-express": "^11.0.1",
   "@nestjs/schedule": "^4.1.1",
-  "@prisma/client": "^5.22.0",
+  "@prisma/client": "5.22.0",
   "bcrypt": "^5.1.1",
   "class-transformer": "^0.5.1",
   "class-validator": "^0.14.1",
@@ -35,9 +46,21 @@
 }
 ```
 
+### package.json DevDependencies (Final)
+```json
+{
+  "prisma": "5.22.0"
+}
+```
+
+### .npmrc Configuration
+```
+legacy-peer-deps=true
+```
+
 ### render.yaml Build Command
 ```yaml
-buildCommand: npm install --legacy-peer-deps && npx prisma generate && npm run build
+buildCommand: npm install && npx prisma generate && npm run build
 ```
 
 ## Next Deployment Should Succeed
