@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: survey-backend
+    env: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install --legacy-peer-deps && npm install prisma@5.22.0 @prisma/client@5.22.0 --save-exact --legacy-peer-deps && npm run prisma:generate && npm run build
+    startCommand: npx --yes prisma@5.22.0 migrate deploy && npm run start:prod
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: HOLD_EXPIRY_MINUTES
+        value: "30"
+      - key: PORT
+        value: "3000"
+      - key: NODE_ENV
+        value: production
