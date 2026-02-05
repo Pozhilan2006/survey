@@ -25,6 +25,22 @@ Production-grade backend system for unified survey-based selection platform with
 
 ## Setup Instructions
 
+### Local Development
+
+See detailed setup instructions below for running locally with PostgreSQL.
+
+### Cloud Deployment (Recommended)
+
+For deploying to production using Vercel, Render, and Supabase:
+
+📘 **[See DEPLOYMENT.md for complete cloud deployment guide](DEPLOYMENT.md)**
+
+Quick checklist: [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)
+
+---
+
+### Local Development Setup
+
 ### Prerequisites
 - Node.js 18+ and npm
 - PostgreSQL 14+

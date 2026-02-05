@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: survey-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && npm run start:prod
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: HOLD_EXPIRY_MINUTES
+        value: 30
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
