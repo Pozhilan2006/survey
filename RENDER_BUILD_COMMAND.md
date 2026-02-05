@@ -13,21 +13,21 @@ The `render.yaml` file is NOT being used by Render. You MUST manually update the
 ## Update Build Command To:
 
 ```bash
-npm install --legacy-peer-deps && npm install prisma@5.22.0 @prisma/client@5.22.0 --save-exact --legacy-peer-deps && npx prisma generate && npm run build
+npm install --legacy-peer-deps && npm install prisma@5.22.0 @prisma/client@5.22.0 --save-exact --legacy-peer-deps && node node_modules/prisma/build/index.js generate && npm run build
 ```
 
 ## Update Start Command To:
 
 ```bash
-npx prisma migrate deploy && npm run start:prod
+node node_modules/prisma/build/index.js migrate deploy && npm run start:prod
 ```
 
 ## Why This Works:
 
 1. First `npm install` installs all dependencies from package.json
 2. Second `npm install` DOWNGRADES Prisma to exactly 5.22.0
-3. `npx prisma` will use the locally installed Prisma 5.22.0 from node_modules
-4. This ensures Prisma 5.22.0 is used for generate and migrate
+3. `node node_modules/prisma/build/index.js` runs Prisma CLI directly, bypassing npx cache completely
+4. This GUARANTEES Prisma 5.22.0 is used
 
 ## Save and Redeploy
 
