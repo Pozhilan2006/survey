@@ -27,24 +27,19 @@ npx prisma migrate dev
 
 ### Phase 2: Configure Render
 
-#### Step 1: Get TWO Connection Strings from Supabase
+#### Step 1: Get Connection String from Supabase
 
 Go to **Supabase Dashboard → Settings → Database**:
 
-**A. Pooled Connection (for Render runtime)** ✅ RECOMMENDED
-- Find "Connection Pooling" section
-- Mode: **Transaction**
-- Copy the URI (looks like):
+**For Migrations (REQUIRED):**
+- Find "Connection String" section (NOT Connection Pooling)
+- URI tab
+- Copy the **direct connection** (looks like):
   ```
-  postgresql://postgres.xxx:[PASSWORD]@aws-0-region.pooler.supabase.com:6543/postgres
+  postgresql://postgres.japmtjbzweqclegolprn:PASSWORD@db.japmtjbzweqclegolprn.supabase.co:5432/postgres
   ```
 
-**B. Direct Connection (for local migrations only)**
-- Find "Connection String" section
-- URI tab:
-  ```
-  postgresql://postgres:[PASSWORD]@db.xxx.supabase.co:5432/postgres
-  ```
+⚠️ **CRITICAL:** Migrations CANNOT use pooled connections (port 6543). You MUST use the direct connection (port 5432).
 
 #### Step 2: Update Render Environment Variables
 
@@ -52,28 +47,27 @@ Go to **Supabase Dashboard → Settings → Database**:
 2. Add/Update these variables:
 
 ```bash
-DATABASE_URL=postgresql://postgres.xxx:[PASSWORD]@aws-0-region.pooler.supabase.com:6543/postgres
-JWT_SECRET=your-secure-random-secret-here
+DATABASE_URL=postgresql://postgres.japmtjbzweqclegolprn:sivajivailajalebi@db.japmtjbzweqclegolprn.supabase.co:5432/postgres
+JWT_SECRET=203e014ff4e487b14c6aab2b7b80f6f5a0620ea4efce8286162708531f2cc3f2b8cceaa377d69cf6cd4842f35e46353d2ba0717ac04a9bc9e939a1efbb394b52
 PORT=3000
 NODE_ENV=production
 ```
 
-⚠️ **Use the POOLED connection (port 6543) for Render!**
+⚠️ **Use the DIRECT connection (port 5432) for now!**
 
-#### Step 3: Update Render Start Command
+#### Step 3: Verify Start Command
 
-**REMOVE migrations from startup** (they're already run locally):
-
-1. Go to **Render Dashboard → Settings → Build & Deploy**
-2. Update **Start Command** to:
+**Keep migrations in start command for initial deploy:**
 
 ```bash
-npm run start:prod
+npx --yes prisma@5.22.0 migrate deploy && npm run start:prod
 ```
 
-❌ **Remove this:** `npm run prisma:migrate &&`
+✅ This will run migrations on first deploy using the direct connection.
 
-✅ **Final command:** `npm run start:prod`
+**After first successful deploy**, you can optionally:
+1. Remove migrations from start command: `npm run start:prod`
+2. Switch to pooled connection (port 6543) for better performance
 
 ### Why This Approach?
 
