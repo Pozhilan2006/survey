@@ -4,8 +4,8 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: npm ci --legacy-peer-deps && npx prisma generate && npm run build
-    startCommand: npx prisma migrate deploy && npm run start:prod
+    buildCommand: npm install prisma@5.22.0 @prisma/client@5.22.0 --save-exact --legacy-peer-deps && npm install --legacy-peer-deps && npx prisma@5.22.0 generate && npm run build
+    startCommand: npx prisma@5.22.0 migrate deploy && npm run start:prod
     envVars:
       - key: DATABASE_URL
         sync: false
