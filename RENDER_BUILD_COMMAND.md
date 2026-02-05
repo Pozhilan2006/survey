@@ -25,9 +25,9 @@ npm run prisma:migrate && npm run start:prod
 ## Why This Works:
 
 1. First `npm install` installs all dependencies from package.json
-2. Second `npm install` installs Prisma 5.22.0 specifically
-3. `npm run prisma:generate` uses the `prisma` command from package.json scripts
-4. npm scripts automatically use the locally installed version from node_modules/.bin
+2. Second `npm install` installs Prisma 5.22.0 to node_modules
+3. `npm run prisma:generate` calls `npx --yes prisma@5.22.0 generate`
+4. `npx --yes prisma@5.22.0` explicitly downloads and uses Prisma 5.22.0
 
 ## Save and Redeploy
 
