@@ -229,7 +229,7 @@ export class ParticipationsService {
                 },
             },
             orderBy: {
-                createdAt: 'desc',
+                startedAt: 'desc',
             },
         });
     }
