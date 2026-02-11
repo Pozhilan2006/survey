@@ -14,10 +14,9 @@ async function handleResponse(response) {
 }
 
 /**
- * Get surveys for current user (calls public surveys endpoint for now)
- * GET /api/v1/surveys
+ * Get all surveys
  */
-export const getMySurveys = async () => {
+export const getSurveys = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/surveys`);
         const data = await handleResponse(response);
@@ -29,33 +28,43 @@ export const getMySurveys = async () => {
 };
 
 /**
- * Get detailed survey by ID
- * GET /api/v1/surveys
+ * Get survey by ID
  */
 export const getSurveyById = async (surveyId) => {
     try {
-        // Optimally we would have a specific endpoint /surveys/:id
-        // But the current backend provides surveys list with options in /surveys
-        // So we filter client-side for now, or use the same endpoint if it supported ID filtering
-        // We will fetch all and find the one we need since the list is small
-        const surveys = await getMySurveys();
+        const surveys = await getSurveys();
         const survey = surveys.find(s => s.id === surveyId);
         if (!survey) {
             throw new Error('Survey not found');
         }
         return survey;
     } catch (error) {
-        console.error('API Call Failed:', error);
+        console.error('Failed to get survey:', error);
         throw error;
     }
 };
 
 /**
- * Submit survey responses
- * Placeholder for future implementation
+ * Submit survey
+ * @param {string} surveyId - Survey ID
+ * @param {string} userId - User ID
+ * @param {string[]} selectedOptionIds - Selected option IDs
  */
-export const submitSurvey = async (surveyId, responses) => {
-    // TODO: Connect to submission API when available
-    console.warn('Submission API not yet available');
-    throw new Error('Submission not yet implemented');
+export const submitSurvey = async (surveyId, userId, selectedOptionIds) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/surveys/${surveyId}/submit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId,
+                selectedOptionIds
+            })
+        });
+        return await handleResponse(response);
+    } catch (error) {
+        console.error('Failed to submit survey:', error);
+        throw error;
+    }
 };

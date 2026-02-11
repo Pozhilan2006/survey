@@ -53,10 +53,16 @@ export default function SurveyRunnerScreen({ route, navigation }) {
             }
         }
 
+
         setSubmitting(true);
         try {
-            await submitSurvey(surveyId, { selections });
-            Alert.alert('Success', 'Survey submitted successfully', [
+            // TODO: Phase 2 - Get real user ID from auth context
+            const userId = 'student-placeholder-' + Date.now();
+            const selectedOptionIds = selections.map(s => s.id);
+
+            await submitSurvey(surveyId, userId, selectedOptionIds);
+
+            Alert.alert('Success', 'Survey submitted successfully!', [
                 { text: 'OK', onPress: () => navigation.goBack() }
             ]);
         } catch (error) {

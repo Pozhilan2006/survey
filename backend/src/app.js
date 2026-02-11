@@ -9,8 +9,9 @@ import logger from './utils/logger.js';
 // Import routes
 import authRoutes from './domains/auth/routes.js';
 import participationRoutes from './domains/participation/routes.js';
-// import userRoutes from './domains/users/routes.js';
 import surveyRoutes from './domains/surveys/routes.js';
+import adminRoutes from './domains/admin/routes.js';
+// import userRoutes from './domains/users/routes.js';
 // ... other routes
 
 const app = express();
@@ -66,8 +67,9 @@ app.get('/api/v1', (req, res) => {
 // Mount domain routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/participation', participationRoutes);
-// app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/surveys', surveyRoutes);
+app.use('/api/v1/admin', adminRoutes);
+// app.use('/api/v1/users', userRoutes);
 // app.use('/api/v1/releases', releaseRoutes);
 // app.use('/api/v1/approvals', approvalRoutes);
 // app.use('/api/v1/documents', documentRoutes);

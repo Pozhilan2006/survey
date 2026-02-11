@@ -32,17 +32,16 @@ export const getSurveys = async () => {
  * Get dashboard stats (aggregated from surveys for now)
  */
 export const getDashboardStats = async () => {
-    // For now we calculate stats from getSurveys since backend doesn't have a stats endpoint yet
-    // This connects frontend to real data without needing backend changes
     try {
         const surveys = await getSurveys();
         return {
             totalSurveys: surveys.length,
             activeSurveys: surveys.filter(s => s.status === 'ACTIVE').length,
-            // Placeholders for data not yet available in minimal API
+            completedSurveys: surveys.filter(s => s.status === 'COMPLETED').length,
+            draftSurveys: surveys.filter(s => s.status === 'DRAFT').length,
+            // Placeholders for data not yet available
             pendingApprovals: 0,
-            activeUsers: 0,
-            completedSurveys: 0
+            activeUsers: 0
         };
     } catch (error) {
         console.error('Failed to get stats:', error);
@@ -50,9 +49,71 @@ export const getDashboardStats = async () => {
     }
 };
 
-// ... other exports kept as mocks or stubs if needed, but for this task we focused on Surveys
-// Keeping other functions as errors or empty to prevent crashes if called
-export const getApprovals = async () => [];
-export const getUsers = async () => [];
-export const getAuditLogs = async () => [];
+/**
+ * Get all submissions
+ * GET /api/v1/admin/submissions
+ */
+export const getSubmissions = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/submissions`);
+        const data = await handleResponse(response);
+        return data.submissions || [];
+    } catch (error) {
+        console.error('Failed to get submissions:', error);
+        throw error;
+    }
+};
 
+/**
+ * Approve a submission
+ * POST /api/v1/admin/submissions/:id/approve
+ */
+export const approveSubmission = async (participationId, adminUserId = 'admin-placeholder') => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/submissions/${participationId}/approve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ adminUserId })
+        });
+        return await handleResponse(response);
+    } catch (error) {
+        console.error('Failed to approve submission:', error);
+        throw error;
+    }
+};
+
+/**
+ * Reject a submission
+ * POST /api/v1/admin/submissions/:id/reject
+ */
+export const rejectSubmission = async (participationId, adminUserId = 'admin-placeholder') => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/submissions/${participationId}/reject`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ adminUserId })
+        });
+        return await handleResponse(response);
+    } catch (error) {
+        console.error('Failed to reject submission:', error);
+        throw error;
+    }
+};
+
+/**
+ * Get audit logs
+ * GET /api/v1/admin/audit-logs
+ */
+export const getAuditLogs = async (limit = 100) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/audit-logs?limit=${limit}`);
+        const data = await handleResponse(response);
+        return data.logs || [];
+    } catch (error) {
+        console.error('Failed to get audit logs:', error);
+        throw error;
+    }
+};
+
+// Placeholder functions for features not yet implemented
+export const getUsers = async () => [];
