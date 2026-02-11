@@ -1,43 +1,40 @@
-# Logs
-logs
-*.log
+# Dependencies
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-# Dependencies
-node_modules/
-.pnp
-.pnp.js
-
-# Testing
-coverage/
-.nyc_output/
-
-# Production
-dist/
-dist-ssr/
-build/
-
-# Environment
+# Environment variables
 .env
 .env.local
 .env.*.local
 
-# Editor
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Misc
+# Build outputs
+dist/
+build/
 *.tsbuildinfo
-.expo/
-.expo-shared/
+
+# Mobile specific
+mobile/.expo/
+mobile/dist/
+
+# Web admin specific
+web-admin/dist/
+
+# Database
+*.sql.backup
+*.db
