@@ -1,0 +1,20 @@
+.audit-logs-page {
+    max-width: 1400px;
+}
+
+.timestamp {
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.action-badge {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.details {
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
