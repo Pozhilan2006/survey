@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { getPool } from '../config/database.js';
+import { getPool } from '../db/mysqlClient.js';
 import { TABLES } from '../db/tables.js';
 import logger from '../utils/logger.js';
 

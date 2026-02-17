@@ -8,6 +8,8 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
 
 # Logs
 logs/
@@ -38,3 +40,17 @@ web-admin/dist/
 # Database
 *.sql.backup
 *.db
+
+# Test reports and coverage
+coverage/
+*.coverage
+test-results/
+*.test.log
+junit.xml
+test-report*.html
+test-report*.json
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

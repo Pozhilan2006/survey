@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../../../api/axios';
-import SurveyCard from '../../../components/SurveyCard/SurveyCard';
+import axiosInstance from '../../api/axios';
+import SurveyCard from '../../components/SurveyCard/SurveyCard';
 import './Dashboard.css';
 
 const StudentDashboard = () => {

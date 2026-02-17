@@ -12,6 +12,13 @@ export const authenticate = (req, res, next) => {
         }
 
         const token = authHeader.split(' ')[1];
+
+        // DEBUG: Log token and secret (development only)
+        if (process.env.NODE_ENV === 'development') {
+            logger.info('🔍 Token received:', token.substring(0, 20) + '...');
+            logger.info('🔑 Using JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'UNDEFINED');
+        }
+
         const decoded = authService.verifyToken(token);
 
         if (!decoded) {
@@ -57,4 +64,9 @@ export const requireRole = (...allowedRoles) => {
 // Keep backward compatibility
 export const authorize = requireRole;
 
-export default { authenticate, requireRole, authorize };
+// Convenience helpers for common roles
+export const requireAdmin = requireRole('ADMIN');
+export const requireStudent = requireRole('STUDENT');
+export const requireApprover = requireRole('APPROVER');
+
+export default { authenticate, requireRole, authorize, requireAdmin, requireStudent, requireApprover };

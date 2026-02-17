@@ -1,4 +1,27 @@
 import logger from './logger.js';
+import { getPool } from '../db/mysqlClient.js';
+
+/**
+ * Execute a function within a database transaction
+ * @param {Function} callback - Function to execute within transaction
+ * @returns {Promise} Result of the callback
+ */
+export async function withTransaction(callback) {
+    const pool = getPool();
+    const connection = await pool.getConnection();
+
+    try {
+        await connection.beginTransaction();
+        const result = await callback(connection);
+        await connection.commit();
+        return result;
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
 
 /**
  * Retry wrapper for database operations

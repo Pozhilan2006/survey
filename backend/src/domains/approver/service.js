@@ -1,4 +1,4 @@
-import { getDb } from '../../config/database.js';
+import { getPool } from '../../db/mysqlClient.js';
 import AssignmentService from './assignmentService.js';
 import ApprovalService from '../admin/approvalService.js';
 import { NotFoundError, ForbiddenError } from '../../middleware/errorHandler.js';
@@ -11,7 +11,7 @@ import logger from '../../utils/logger.js';
  */
 class ApproverService {
     constructor(db = null) {
-        this.db = db || getDb();
+        this.db = db || getPool();
         this.assignmentService = new AssignmentService(this.db);
         this.approvalService = new ApprovalService(this.db);
     }

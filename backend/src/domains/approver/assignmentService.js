@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { getDb } from '../../config/database.js';
+import { getPool } from '../../db/mysqlClient.js';
 import { NotFoundError, ForbiddenError } from '../../middleware/errorHandler.js';
 import logger from '../../utils/logger.js';
 
@@ -10,7 +10,7 @@ import logger from '../../utils/logger.js';
  */
 class AssignmentService {
     constructor(db = null) {
-        this.db = db || getDb();
+        this.db = db || getPool();
     }
 
     /**

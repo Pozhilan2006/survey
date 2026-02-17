@@ -11,12 +11,12 @@ const axiosInstance = axios.create({
     }
 });
 
-// Request interceptor - add token
+// Request interceptor - add accessToken
 axiosInstance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        const accessToken = localStorage.getItem('accessToken');
+        if (accessToken) {
+            config.headers.Authorization = `Bearer ${accessToken}`;
             console.log('🔑 Added Authorization header to request:', config.url);
         } else {
             console.log('📤 Request without token:', config.url);
@@ -29,19 +29,46 @@ axiosInstance.interceptors.request.use(
     }
 );
 
-// Response interceptor - handle errors
+// Response interceptor - handle errors and auto-refresh
 axiosInstance.interceptors.response.use(
     (response) => {
         console.log('✅ Response received:', response.config.url, response.status);
         return response;
     },
-    (error) => {
+    async (error) => {
+        const originalRequest = error.config;
+
         console.error('❌ Response error:', error.config?.url, error.response?.status);
-        if (error.response?.status === 401) {
-            console.log('🚫 401 Unauthorized - clearing token and redirecting to login');
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+
+            try {
+                console.log('🔄 Attempting token refresh...');
+                const refreshToken = localStorage.getItem('refreshToken');
+
+                if (!refreshToken) {
+                    throw new Error('No refresh token available');
+                }
+
+                const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+
+                console.log('✅ Token refreshed successfully');
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('refreshToken', data.refreshToken);
+
+                // Retry original request with new token
+                originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+                return axiosInstance(originalRequest);
+            } catch (refreshError) {
+                console.log('🚫 Token refresh failed - clearing tokens and redirecting to login');
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                window.location.href = '/login';
+                return Promise.reject(refreshError);
+            }
         }
+
         return Promise.reject(error);
     }
 );

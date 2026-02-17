@@ -6,16 +6,38 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [accessToken, setAccessToken] = useState(null);
 
     useEffect(() => {
-        console.log('🔄 AuthContext initialized, token:', token ? 'exists' : 'none');
-        if (token) {
-            verifyToken();
+        console.log('🔄 AuthContext initialized');
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+            console.log('🔄 Refresh token found, attempting to restore session...');
+            restoreSession();
         } else {
+            console.log('📭 No refresh token found');
             setLoading(false);
         }
-    }, [token]);
+    }, []);
+
+    const restoreSession = async () => {
+        try {
+            const refreshToken = localStorage.getItem('refreshToken');
+            const response = await authAPI.refresh(refreshToken);
+            console.log('✅ Session restored:', response.data);
+
+            const { accessToken: newAccessToken, refreshToken: newRefreshToken, user: userData } = response.data;
+            setAccessToken(newAccessToken);
+            localStorage.setItem('refreshToken', newRefreshToken);
+            localStorage.setItem('accessToken', newAccessToken); // Store for axios interceptor
+            setUser(userData);
+        } catch (error) {
+            console.error('❌ Session restoration failed:', error);
+            logout();
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const verifyToken = async () => {
         console.log('🔍 Verifying token...');
@@ -39,13 +61,14 @@ export const AuthProvider = ({ children }) => {
             const response = await authAPI.login(email, password);
             console.log('📥 API response received:', response.data);
 
-            const { token: newToken, user: newUser } = response.data;
+            const { accessToken: newAccessToken, refreshToken: newRefreshToken, user: newUser } = response.data;
 
-            console.log('💾 Storing token in localStorage...');
-            localStorage.setItem('token', newToken);
+            console.log('💾 Storing tokens...');
+            setAccessToken(newAccessToken);
+            localStorage.setItem('accessToken', newAccessToken); // Store for axios interceptor
+            localStorage.setItem('refreshToken', newRefreshToken);
 
             console.log('📝 Updating state...');
-            setToken(newToken);
             setUser(newUser);
 
             console.log('✅ Login complete, returning user:', newUser);
@@ -59,13 +82,14 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         console.log('🚪 Logging out...');
-        localStorage.removeItem('token');
-        setToken(null);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        setAccessToken(null);
         setUser(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, logout, loading, accessToken }}>
             {children}
         </AuthContext.Provider>
     );

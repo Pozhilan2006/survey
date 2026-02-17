@@ -8,5 +8,8 @@ export const authAPI = {
         axiosInstance.post('/auth/register', { email, password, role }),
 
     verify: () =>
-        axiosInstance.get('/auth/verify')
+        axiosInstance.get('/auth/verify'),
+
+    refresh: (refreshToken) =>
+        axiosInstance.post('/auth/refresh', { refreshToken })
 };

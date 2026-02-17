@@ -1,5 +1,9 @@
 import logger from './logger.js';
 import holdExpirationJob from '../jobs/holdExpiration.js';
+import { getPool } from '../db/mysqlClient.js';
+import { v4 as uuidv4 } from 'uuid';
+
+let cleanupInterval = null;
 
 /**
  * Start all background jobs

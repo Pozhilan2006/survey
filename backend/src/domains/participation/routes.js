@@ -3,7 +3,7 @@ import { authenticate } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validator.js';
 import { body, param } from 'express-validator';
 import ParticipationController from './controller.js';
-import { getPool } from '../../config/database.js';
+import { getPool } from '../../db/mysqlClient.js';
 
 const router = express.Router();
 
