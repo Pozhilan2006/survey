@@ -28,8 +28,29 @@ export class RuleEvaluator {
             QUOTA_AVAILABLE: this.evaluateQuotaAvailable.bind(this),
             HAS_ROLE: this.evaluateHasRole.bind(this),
             METADATA_MATCH: this.evaluateMetadataMatch.bind(this),
+            YEAR_EQUALS: this.evaluateYearEquals.bind(this),
+            DEPARTMENT_EQUALS: this.evaluateDepartmentEquals.bind(this),
             CUSTOM: this.evaluateCustom.bind(this)
         };
+    }
+
+    async evaluateYearEquals(node, context) {
+        // Handle both string and number comparison safely
+        const userYear = String(context.user.metadata.year || '');
+        const targetYear = String(node.value);
+
+        return userYear === targetYear
+            ? this.allowResult(`Year matches: ${node.value}`)
+            : this.denyResult(`Year does not match: required ${node.value}, got ${userYear}`);
+    }
+
+    async evaluateDepartmentEquals(node, context) {
+        const userDept = (context.user.metadata.department || '').toUpperCase();
+        const targetDept = (node.value || '').toUpperCase();
+
+        return userDept === targetDept
+            ? this.allowResult(`Department matches: ${node.value}`)
+            : this.denyResult(`Department does not match: required ${node.value}, got ${userDept}`);
     }
 
     /**

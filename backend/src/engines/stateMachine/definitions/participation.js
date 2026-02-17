@@ -1,6 +1,7 @@
 import { StateMachine } from '../index.js';
 import { PARTICIPATION_STATES, SEAT_HOLD_DURATION_MINUTES } from '../../../config/constants.js';
 import logger from '../../../utils/logger.js';
+import crypto from 'crypto';
 
 /**
  * Participation State Machine

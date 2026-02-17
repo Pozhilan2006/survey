@@ -1,10 +1,14 @@
 import { getPool } from '../../db/mysqlClient.js';
 import logger from '../../utils/logger.js';
+import { setIsolationLevel } from '../../utils/transactionUtils.js';
+import { validateTransition } from '../../utils/stateMachine.js';
+import { TABLES } from '../../db/tables.js';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Admin Service
  * Handles admin operations for submissions and approvals
+ * HARDENED: Conditional updates to prevent double approval/rejection
  */
 class AdminService {
     /**
@@ -43,6 +47,7 @@ class AdminService {
 
     /**
      * Approve a submission
+     * HARDENING: Uses conditional UPDATE to prevent double approval
      * @param {string} participationId - Participation ID
      * @param {string} adminUserId - Admin user ID
      * @returns {Promise<object>} Approval result
@@ -52,9 +57,11 @@ class AdminService {
         const connection = await pool.getConnection();
 
         try {
+            // HARDENING: Set isolation level
+            await setIsolationLevel(connection, 'REPEATABLE READ');
             await connection.beginTransaction();
 
-            // 1. Check if participation exists
+            // 1. Check if participation exists and get current status
             const [participations] = await connection.query(
                 'SELECT id, user_id, status FROM survey_participation WHERE id = ?',
                 [participationId]
@@ -66,19 +73,38 @@ class AdminService {
 
             const participation = participations[0];
 
-            if (participation.status !== 'SUBMITTED') {
-                throw new Error(`Cannot approve submission with status: ${participation.status}`);
-            }
+            // Validate state transition
+            validateTransition('PARTICIPATION', participation.status, 'APPROVED');
 
-            // 2. Update status to APPROVED
-            await connection.query(
+            // 2. HARDENING: Conditional update - only update if status is still SUBMITTED
+            const [result] = await connection.query(
                 `UPDATE survey_participation 
                  SET status = 'APPROVED', completed_at = NOW() 
-                 WHERE id = ?`,
+                 WHERE id = ? AND status = 'SUBMITTED'`,
                 [participationId]
             );
 
-            // 3. Insert audit log
+            // HARDENING: Check if update actually happened
+            if (result.affectedRows === 0) {
+                // Status changed between our SELECT and UPDATE (race condition)
+                const [check] = await connection.query(
+                    'SELECT status FROM survey_participation WHERE id = ?',
+                    [participationId]
+                );
+
+                if (check.length > 0 && check[0].status !== 'SUBMITTED') {
+                    const error = new Error(
+                        `Submission already processed (current status: ${check[0].status})`
+                    );
+                    error.code = 'ALREADY_PROCESSED';
+                    throw error;
+                }
+
+                // Should not reach here, but handle gracefully
+                throw new Error('Failed to update submission status');
+            }
+
+            // 3. Insert audit log (in same transaction)
             await this.insertAuditLog(connection, {
                 userId: adminUserId,
                 action: 'SURVEY_APPROVED',
@@ -109,6 +135,7 @@ class AdminService {
 
     /**
      * Reject a submission
+     * HARDENING: Uses conditional UPDATE to prevent double rejection
      * @param {string} participationId - Participation ID
      * @param {string} adminUserId - Admin user ID
      * @returns {Promise<object>} Rejection result
@@ -118,9 +145,11 @@ class AdminService {
         const connection = await pool.getConnection();
 
         try {
+            // HARDENING: Set isolation level
+            await setIsolationLevel(connection, 'REPEATABLE READ');
             await connection.beginTransaction();
 
-            // 1. Check if participation exists
+            // 1. Check if participation exists and get current status
             const [participations] = await connection.query(
                 'SELECT id, user_id, status FROM survey_participation WHERE id = ?',
                 [participationId]
@@ -132,19 +161,38 @@ class AdminService {
 
             const participation = participations[0];
 
-            if (participation.status !== 'SUBMITTED') {
-                throw new Error(`Cannot reject submission with status: ${participation.status}`);
-            }
+            // Validate state transition
+            validateTransition('PARTICIPATION', participation.status, 'REJECTED');
 
-            // 2. Update status to REJECTED
-            await connection.query(
+            // 2. HARDENING: Conditional update - only update if status is still SUBMITTED
+            const [result] = await connection.query(
                 `UPDATE survey_participation 
                  SET status = 'REJECTED', completed_at = NOW() 
-                 WHERE id = ?`,
+                 WHERE id = ? AND status = 'SUBMITTED'`,
                 [participationId]
             );
 
-            // 3. Insert audit log
+            // HARDENING: Check if update actually happened
+            if (result.affectedRows === 0) {
+                // Status changed between our SELECT and UPDATE (race condition)
+                const [check] = await connection.query(
+                    'SELECT status FROM survey_participation WHERE id = ?',
+                    [participationId]
+                );
+
+                if (check.length > 0 && check[0].status !== 'SUBMITTED') {
+                    const error = new Error(
+                        `Submission already processed (current status: ${check[0].status})`
+                    );
+                    error.code = 'ALREADY_PROCESSED';
+                    throw error;
+                }
+
+                // Should not reach here, but handle gracefully
+                throw new Error('Failed to update submission status');
+            }
+
+            // 3. Insert audit log (in same transaction)
             await this.insertAuditLog(connection, {
                 userId: adminUserId,
                 action: 'SURVEY_REJECTED',

@@ -38,7 +38,14 @@ export const approveSubmission = async (req, res, next) => {
             });
         }
 
-        if (error.message.includes('Cannot approve')) {
+        // HARDENING: Handle double approval
+        if (error.code === 'ALREADY_PROCESSED') {
+            return res.status(409).json({
+                error: { code: 'ALREADY_PROCESSED', message: error.message }
+            });
+        }
+
+        if (error.code === 'INVALID_TRANSITION') {
             return res.status(400).json({
                 error: { code: 'INVALID_STATE', message: error.message }
             });
@@ -69,7 +76,14 @@ export const rejectSubmission = async (req, res, next) => {
             });
         }
 
-        if (error.message.includes('Cannot reject')) {
+        // HARDENING: Handle double rejection
+        if (error.code === 'ALREADY_PROCESSED') {
+            return res.status(409).json({
+                error: { code: 'ALREADY_PROCESSED', message: error.message }
+            });
+        }
+
+        if (error.code === 'INVALID_TRANSITION') {
             return res.status(400).json({
                 error: { code: 'INVALID_STATE', message: error.message }
             });

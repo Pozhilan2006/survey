@@ -1,12 +1,19 @@
 import { getPool } from '../../db/mysqlClient.js';
 import logger from '../../utils/logger.js';
 import { v4 as uuidv4 } from 'uuid';
+import HoldService from './holdService.js';
+import { setIsolationLevel, handleDuplicateError, handleConstraintError } from '../../utils/transactionUtils.js';
 
 /**
  * Submission Service
  * Handles survey submission logic with transactions
+ * HARDENED: REPEATABLE READ isolation, duplicate submission prevention
  */
 class SubmissionService {
+    constructor() {
+        this.holdService = new HoldService();
+    }
+
     /**
      * Submit a survey
      * @param {string} surveyId - Survey ID
@@ -19,6 +26,8 @@ class SubmissionService {
         const connection = await pool.getConnection();
 
         try {
+            // HARDENING: Set transaction isolation level
+            await setIsolationLevel(connection, 'REPEATABLE READ');
             await connection.beginTransaction();
 
             // 1. Validate survey exists
@@ -49,22 +58,47 @@ class SubmissionService {
                 }
             }
 
-            // 3. Create participation record
-            const participationId = uuidv4();
-            await connection.query(
-                `INSERT INTO survey_participation 
-                 (id, release_id, user_id, status, started_at, submitted_at, state_history) 
-                 VALUES (?, ?, ?, ?, NOW(), NOW(), ?)`,
-                [
-                    participationId,
-                    surveyId, // TODO: Phase 2 - use actual release_id
-                    userId,
-                    'SUBMITTED',
-                    JSON.stringify([{ status: 'SUBMITTED', timestamp: new Date().toISOString() }])
-                ]
+            // 3. Validate and confirm holds (Phase 2)
+            // HARDENING: validateHolds uses FOR UPDATE internally
+            const hasValidHolds = await this.holdService.validateHolds(
+                connection,
+                userId,
+                selectedOptionIds
             );
 
-            // 4. Insert selections
+            if (!hasValidHolds) {
+                const error = new Error('No valid holds found. Please select options again.');
+                error.code = 'HOLD_EXPIRED';
+                throw error;
+            }
+
+            // 4. Create participation record
+            // HARDENING: This will fail with ER_DUP_ENTRY if user already submitted
+            const participationId = uuidv4();
+            try {
+                await connection.query(
+                    `INSERT INTO survey_participation 
+                     (id, release_id, user_id, status, started_at, submitted_at, state_history) 
+                     VALUES (?, ?, ?, ?, NOW(), NOW(), ?)`,
+                    [
+                        participationId,
+                        surveyId, // TODO: Phase 3 - use actual release_id
+                        userId,
+                        'SUBMITTED',
+                        JSON.stringify([{ status: 'SUBMITTED', timestamp: new Date().toISOString() }])
+                    ]
+                );
+            } catch (error) {
+                // HARDENING: Handle duplicate submission
+                if (error.code === 'ER_DUP_ENTRY') {
+                    const dupError = new Error('You have already submitted this survey');
+                    dupError.code = 'DUPLICATE_SUBMISSION';
+                    throw dupError;
+                }
+                throw error;
+            }
+
+            // 5. Insert selections
             for (const optionId of selectedOptionIds) {
                 const selectionId = uuidv4();
                 await connection.query(
@@ -75,7 +109,11 @@ class SubmissionService {
                 );
             }
 
-            // 5. Insert audit log
+            // 6. Confirm holds (convert to filled capacity)
+            // HARDENING: This handles capacity updates atomically
+            await this.holdService.confirmHolds(connection, userId, selectedOptionIds);
+
+            // 7. Insert audit log
             await this.insertAuditLog(connection, {
                 userId,
                 action: 'SURVEY_SUBMITTED',
@@ -99,7 +137,10 @@ class SubmissionService {
         } catch (error) {
             await connection.rollback();
             logger.error('Submission failed:', error);
-            throw error;
+
+            // HARDENING: Handle constraint violations
+            const formattedError = handleConstraintError(error);
+            throw formattedError;
         } finally {
             connection.release();
         }

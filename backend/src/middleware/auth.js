@@ -1,56 +1,60 @@
-import jwt from 'jsonwebtoken';
-import { UnauthorizedError, ForbiddenError } from './errorHandler.js';
-import { query } from '../config/database.js';
+import authService from '../domains/auth/authService.js';
+import logger from '../utils/logger.js';
 
-export async function authenticate(req, res, next) {
+export const authenticate = (req, res, next) => {
     try {
-        // Extract token from Authorization header
         const authHeader = req.headers.authorization;
+
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            throw new UnauthorizedError('No token provided');
+            return res.status(401).json({
+                error: { code: 'NO_AUTH', message: 'Authentication required' }
+            });
         }
 
-        const token = authHeader.substring(7);
+        const token = authHeader.split(' ')[1];
+        const decoded = authService.verifyToken(token);
 
-        // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        // Fetch user from database
-        const [rows] = await query(
-            'SELECT * FROM users WHERE id = ?',
-            [decoded.userId]
-        );
-
-        if (rows.length === 0) {
-            throw new UnauthorizedError('User not found');
+        if (!decoded) {
+            throw { code: 'INVALID_TOKEN', message: 'Invalid token' };
         }
 
-        // Attach user to request
-        req.user = rows[0];
+        req.user = decoded;
         next();
     } catch (error) {
-        if (error.name === 'JsonWebTokenError') {
-            next(new UnauthorizedError('Invalid token'));
-        } else if (error.name === 'TokenExpiredError') {
-            next(new UnauthorizedError('Token expired'));
-        } else {
-            next(error);
-        }
-    }
-}
+        logger.error('Authentication error:', error);
 
-export function authorize(...allowedRoles) {
+        if (error.code === 'INVALID_TOKEN') {
+            return res.status(401).json({ error });
+        }
+
+        res.status(500).json({
+            error: { code: 'SERVER_ERROR', message: 'Authentication failed' }
+        });
+    }
+};
+
+export const requireRole = (...allowedRoles) => {
     return (req, res, next) => {
         if (!req.user) {
-            return next(new UnauthorizedError('Authentication required'));
+            return res.status(500).json({
+                error: { code: 'REQUIRE_ROLE_CALLED', message: 'Authentication required' }
+            });
         }
 
         if (!allowedRoles.includes(req.user.role)) {
-            return next(new ForbiddenError('Insufficient permissions'));
+            return res.status(403).json({
+                error: {
+                    code: 'FORBIDDEN',
+                    message: `Access denied. Required roles: ${allowedRoles.join(', ')}`
+                }
+            });
         }
 
         next();
     };
-}
+};
 
-export default { authenticate, authorize };
+// Keep backward compatibility
+export const authorize = requireRole;
+
+export default { authenticate, requireRole, authorize };

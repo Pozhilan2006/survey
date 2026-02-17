@@ -1,0 +1,215 @@
+/* Priority Ranking Styles */
+
+.priority-ranking {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 20px 0;
+}
+
+.ranking-section {
+    background: #f9f9f9;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.selection-count,
+.option-count {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    padding: 4px 12px;
+    background: white;
+    border-radius: 12px;
+}
+
+.droppable-area {
+    min-height: 120px;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.droppable-area.ranked {
+    background: white;
+    border: 2px dashed #1976d2;
+}
+
+.droppable-area.unranked {
+    background: white;
+    border: 2px dashed #ccc;
+}
+
+.droppable-area.dragging-over {
+    background: #e3f2fd;
+    border-color: #1976d2;
+    border-style: solid;
+}
+
+.droppable-area.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+}
+
+.empty-state p {
+    margin: 8px 0;
+}
+
+.empty-state .hint {
+    font-size: 12px;
+    color: #bbb;
+}
+
+.option-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    margin-bottom: 8px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: grab;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.option-card:hover {
+    border-color: #1976d2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.option-card.dragging {
+    cursor: grabbing;
+    opacity: 0.8;
+    transform: rotate(2deg);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.option-card.ranked {
+    border-color: #1976d2;
+    background: #f5f9ff;
+}
+
+.rank-badge {
+    font-size: 24px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.option-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.option-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.option-meta {
+    font-size: 13px;
+    color: #666;
+}
+
+.drag-handle {
+    font-size: 20px;
+    color: #999;
+    cursor: grab;
+}
+
+.option-card.dragging .drag-handle {
+    cursor: grabbing;
+}
+
+.max-reached-notice {
+    padding: 12px 16px;
+    background: #fff3e0;
+    border: 1px solid #ff9800;
+    border-radius: 6px;
+    color: #e65100;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.option-card {
+    animation: slideIn 0.2s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .priority-ranking {
+        gap: 16px;
+    }
+
+    .ranking-section {
+        padding: 16px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .option-card {
+        padding: 12px;
+    }
+
+    .rank-badge {
+        font-size: 20px;
+        min-width: 32px;
+    }
+
+    .option-label {
+        font-size: 14px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .drag-handle {
+        display: none;
+    }
+
+    .option-card {
+        cursor: default;
+        page-break-inside: avoid;
+    }
+}

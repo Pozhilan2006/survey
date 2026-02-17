@@ -30,16 +30,25 @@ export class EligibilityEngine {
             logger.debug(`Evaluating eligibility for user ${userId}, release ${releaseId}`);
 
             // 1. Fetch release eligibility rules
-            const release = await this.db.query(
-                'SELECT eligibility_rules FROM survey_releases WHERE id = $1',
+            const [rows] = await this.db.query(
+                'SELECT eligibility_rules FROM survey_releases WHERE id = ?',
                 [releaseId]
             );
 
-            if (!release.rows[0]) {
+            if (!rows[0]) {
                 throw new Error('Release not found');
             }
 
-            const rules = release.rows[0].eligibility_rules;
+            let rules = rows[0].eligibility_rules;
+
+            if (typeof rules === 'string') {
+                try {
+                    rules = JSON.parse(rules);
+                } catch (e) {
+                    logger.error('Failed to parse eligibility rules:', e);
+                    rules = {};
+                }
+            }
 
             // If no rules defined, allow by default
             if (!rules || Object.keys(rules).length === 0) {

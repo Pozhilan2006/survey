@@ -1,0 +1,310 @@
+/* Eligibility Rule Builder Styles */
+
+.eligibility-rule-builder {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fafafa;
+    margin: 20px 0;
+}
+
+.rule-builder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.rule-builder-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.rule-builder-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-preview,
+.btn-clear {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-preview:hover {
+    background: #f0f0f0;
+}
+
+.btn-clear {
+    color: #d32f2f;
+    border-color: #d32f2f;
+}
+
+.btn-clear:hover {
+    background: #ffebee;
+}
+
+/* Rule Preview */
+.rule-preview {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.rule-preview h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.rule-preview pre {
+    margin: 0;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* Empty State */
+.rule-builder-empty {
+    text-align: center;
+    padding: 40px 20px;
+    background: white;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+}
+
+.rule-builder-empty p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.btn-add-first-rule {
+    padding: 10px 20px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.btn-add-first-rule:hover {
+    background: #1565c0;
+}
+
+/* Rule Group */
+.rule-group {
+    background: white;
+    border: 2px solid #2196f3;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.rule-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.operator-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f5f5f5;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1976d2;
+    cursor: pointer;
+}
+
+.btn-remove-group {
+    padding: 6px 12px;
+    background: #fff;
+    color: #d32f2f;
+    border: 1px solid #d32f2f;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.btn-remove-group:hover {
+    background: #ffebee;
+}
+
+.rule-group-content {
+    margin-left: 10px;
+}
+
+.rule-item {
+    margin: 10px 0;
+}
+
+.rule-group-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed #ddd;
+}
+
+.btn-add-condition,
+.btn-add-group {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.btn-add-condition {
+    color: #1976d2;
+    border-color: #1976d2;
+}
+
+.btn-add-condition:hover {
+    background: #e3f2fd;
+}
+
+.btn-add-group {
+    color: #388e3c;
+    border-color: #388e3c;
+}
+
+.btn-add-group:hover {
+    background: #e8f5e9;
+}
+
+/* Rule Condition */
+.rule-condition {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+}
+
+.rule-condition-content {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.rule-type-select,
+.rule-value-input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    flex: 1;
+}
+
+.rule-type-select {
+    min-width: 180px;
+    background: #f9f9f9;
+    font-weight: 500;
+}
+
+.rule-value-input {
+    min-width: 150px;
+}
+
+.btn-remove-rule {
+    padding: 4px 10px;
+    background: #fff;
+    color: #d32f2f;
+    border: 1px solid #d32f2f;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    transition: all 0.2s;
+    min-width: 32px;
+}
+
+.btn-remove-rule:hover {
+    background: #ffebee;
+}
+
+/* Help Section */
+.rule-builder-help {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.rule-builder-help details {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 10px 15px;
+}
+
+.rule-builder-help summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: #1976d2;
+    user-select: none;
+}
+
+.rule-builder-help summary:hover {
+    color: #1565c0;
+}
+
+.rule-builder-help ul {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+}
+
+.rule-builder-help li {
+    margin: 8px 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.rule-builder-help strong {
+    color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .rule-condition-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .rule-type-select,
+    .rule-value-input {
+        width: 100%;
+    }
+
+    .rule-group-actions {
+        flex-direction: column;
+    }
+
+    .btn-add-condition,
+    .btn-add-group {
+        width: 100%;
+    }
+}

@@ -1,61 +1,20 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
+import { login, register } from './controller.js';
+import { changePassword, requestPasswordReset, resetPassword } from './passwordController.js';
+import { refreshToken, logout } from './refreshController.js';
+import { authenticate } from '../../middleware/auth.js';
 
 const router = express.Router();
 
-/**
- * DEV ONLY: Generate a test JWT token
- * POST /api/v1/auth/dev-login
- * 
- * This endpoint is for development/testing only.
- * Remove or disable in production.
- */
-router.post('/dev-login', (req, res) => {
-    const { userId = 'dev-user-1', role = 'ADMIN' } = req.body;
+// Public routes
+router.post('/login', login);
+router.post('/register', register);
+router.post('/forgot-password', requestPasswordReset);
+router.post('/reset-password', resetPassword);
+router.post('/refresh', refreshToken);
 
-    const token = jwt.sign(
-        {
-            userId,
-            role,
-            email: `${userId}@dev.local`
-        },
-        process.env.JWT_SECRET || 'dev-secret',
-        { expiresIn: '1h' }
-    );
-
-    res.json({
-        accessToken: token,
-        user: {
-            userId,
-            role,
-            email: `${userId}@dev.local`
-        }
-    });
-});
-
-/**
- * DEV ONLY: Generate a student token
- * POST /api/v1/auth/dev-student
- */
-router.post('/dev-student', (req, res) => {
-    const token = jwt.sign(
-        {
-            userId: 'student-123',
-            role: 'STUDENT',
-            email: 'student@dev.local'
-        },
-        process.env.JWT_SECRET || 'dev-secret',
-        { expiresIn: '1h' }
-    );
-
-    res.json({
-        accessToken: token,
-        user: {
-            userId: 'student-123',
-            role: 'STUDENT',
-            email: 'student@dev.local'
-        }
-    });
-});
+// Protected routes
+router.post('/change-password', authenticate, changePassword);
+router.post('/logout', authenticate, logout);
 
 export default router;

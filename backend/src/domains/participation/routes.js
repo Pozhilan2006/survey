@@ -94,6 +94,16 @@ router.post(
 );
 
 /**
+ * Get student dashboard
+ * GET /api/v1/participation/dashboard
+ */
+router.get(
+    '/dashboard',
+    authenticate,
+    (req, res, next) => getController().getDashboard(req, res, next)
+);
+
+/**
  * Get user's participations
  * GET /api/v1/participation/user/me
  */
@@ -101,6 +111,46 @@ router.get(
     '/user/me',
     authenticate,
     (req, res, next) => getController().getUserParticipations(req, res, next)
+);
+
+/**
+ * Waitlist Management
+ */
+import waitlistController from './waitlistController.js';
+
+// Join waitlist
+router.post(
+    '/waitlist/join',
+    authenticate,
+    (req, res, next) => waitlistController.joinWaitlist(req, res, next)
+);
+
+// Leave waitlist
+router.delete(
+    '/waitlist/leave/:releaseId',
+    authenticate,
+    (req, res, next) => waitlistController.leaveWaitlist(req, res, next)
+);
+
+// Get waitlist position
+router.get(
+    '/waitlist/position/:releaseId',
+    authenticate,
+    (req, res, next) => waitlistController.getPosition(req, res, next)
+);
+
+// Get user's commitments
+router.get(
+    '/my-commitments',
+    authenticate,
+    (req, res, next) => getController().getMyCommitments(req, res, next)
+);
+
+// Claim seat from waitlist
+router.post(
+    '/waitlist/claim',
+    authenticate,
+    (req, res, next) => waitlistController.claimSeat(req, res, next)
 );
 
 export default router;

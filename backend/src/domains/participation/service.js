@@ -269,6 +269,68 @@ class ParticipationService {
     }
 
     /**
+     * Get user's commitments (all submissions with details)
+     */
+    async getUserCommitments(userId) {
+        const [submissions] = await this.db.query(`
+            SELECT 
+                ss.id as submission_id,
+                ss.release_id,
+                ss.status,
+                ss.created_at,
+                ss.updated_at,
+                s.id as survey_id,
+                s.title as survey_title,
+                s.type as survey_type,
+                sr.active_from,
+                sr.active_to,
+                sr.config as release_config
+            FROM survey_submissions ss
+            JOIN survey_releases sr ON ss.release_id = sr.id
+            JOIN surveys s ON sr.survey_id = s.id
+            WHERE ss.user_id = ?
+            ORDER BY ss.created_at DESC
+        `, [userId]);
+
+        // Get selections for each submission
+        for (const submission of submissions) {
+            const [selections] = await this.db.query(`
+                SELECT 
+                    sel.option_id,
+                    sel.rank,
+                    opt.label as option_label,
+                    opt.capacity
+                FROM submission_selections sel
+                JOIN survey_options opt ON sel.option_id = opt.id
+                WHERE sel.submission_id = ?
+                ORDER BY sel.rank ASC
+            `, [submission.submission_id]);
+
+            submission.selections = selections;
+        }
+
+        // Group by status
+        const grouped = {
+            approved: submissions.filter(s => s.status === 'APPROVED'),
+            pending: submissions.filter(s => s.status === 'PENDING_APPROVAL'),
+            rejected: submissions.filter(s => s.status === 'REJECTED'),
+            submitted: submissions.filter(s => s.status === 'SUBMITTED')
+        };
+
+        return {
+            all: submissions,
+            grouped,
+            stats: {
+                total: submissions.length,
+                approved: grouped.approved.length,
+                pending: grouped.pending.length,
+                rejected: grouped.rejected.length,
+                submitted: grouped.submitted.length
+            }
+        };
+    }
+
+    /**
      * Check capacity availability
      */
     async checkCapacity(connection, releaseId, optionId, userId) {

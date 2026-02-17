@@ -1,0 +1,369 @@
+.slot-booking {
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.slot-booking-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.slot-booking-header h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.slot-booking-header p {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Loading State */
+.loading {
+    text-align: center;
+    padding: 48px;
+    color: #666;
+    font-size: 16px;
+}
+
+/* Error Message */
+.error-message {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c33;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+/* No Slots */
+.no-slots {
+    text-align: center;
+    padding: 48px;
+    color: #999;
+}
+
+.no-slots-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+/* Slot List */
+.slot-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.slot-item {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+    position: relative;
+}
+
+.slot-item:hover:not(.full):not(.booked) {
+    border-color: #2196f3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+}
+
+.slot-item.selected {
+    border-color: #2196f3;
+    background: #f0f8ff;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.slot-item.full {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f5f5f5;
+}
+
+.slot-item.booked {
+    border-color: #4caf50;
+    background: #f1f8f4;
+    cursor: default;
+}
+
+.slot-time {
+    margin-bottom: 8px;
+}
+
+.time-range {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.date {
+    font-size: 14px;
+    color: #666;
+}
+
+.slot-location {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.slot-capacity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-available {
+    color: #4caf50;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.status-full {
+    color: #f44336;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.status-booked {
+    color: #4caf50;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.selected-indicator {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #2196f3;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Slot Actions */
+.slot-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-hold,
+.btn-cancel {
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-hold {
+    background: #2196f3;
+    color: white;
+}
+
+.btn-hold:hover:not(:disabled) {
+    background: #1976d2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.btn-hold:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.btn-cancel {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.btn-cancel:hover {
+    background: #e0e0e0;
+}
+
+/* Hold Container */
+.slot-hold-container {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.slot-hold-container h3 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 24px;
+}
+
+.hold-details {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.hold-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.hold-icon {
+    font-size: 48px;
+}
+
+.hold-time .time-range {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.hold-time .date {
+    font-size: 14px;
+    color: #666;
+}
+
+.location {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 16px;
+}
+
+.countdown-container {
+    text-align: center;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+}
+
+.countdown-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.countdown {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2196f3;
+    font-family: 'Courier New', monospace;
+}
+
+.countdown.urgent {
+    color: #f44336;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.countdown-warning {
+    margin-top: 8px;
+    color: #f44336;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.hold-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-confirm,
+.btn-release {
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-confirm {
+    background: #4caf50;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-release {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.btn-release:hover {
+    background: #e0e0e0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .slot-booking {
+        padding: 16px;
+    }
+
+    .slot-booking-header h3 {
+        font-size: 20px;
+    }
+
+    .time-range {
+        font-size: 16px;
+    }
+
+    .slot-hold-container {
+        padding: 24px 16px;
+    }
+
+    .hold-info {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .countdown {
+        font-size: 24px;
+    }
+
+    .hold-actions,
+    .slot-actions {
+        flex-direction: column;
+    }
+
+    .btn-hold,
+    .btn-cancel,
+    .btn-confirm,
+    .btn-release {
+        width: 100%;
+    }
+}

@@ -1,0 +1,38 @@
+
+=== Checking Database Schema ===
+
+USERS TABLE:
+  id (char(36)) NOT NULL [PRI] 
+  email (varchar(255)) NOT NULL [UNI] 
+  role (varchar(50)) NOT NULL  DEFAULT STUDENT
+  created_at (datetime) NULL  DEFAULT CURRENT_TIMESTAMP
+  updated_at (datetime) NULL  DEFAULT CURRENT_TIMESTAMP
+  last_login (datetime) NULL  
+  metadata (json) NULL  
+
+SURVEYS TABLE:
+  id (char(36)) NOT NULL [PRI] 
+  title (varchar(255)) NOT NULL  
+  description (text) NULL  
+  type (varchar(50)) NOT NULL  
+  status (varchar(50)) NOT NULL [MUL] DEFAULT DRAFT
+  created_by (char(36)) NOT NULL [MUL] 
+  created_at (datetime) NULL  DEFAULT CURRENT_TIMESTAMP
+  updated_at (datetime) NULL  DEFAULT CURRENT_TIMESTAMP
+  config (json) NULL  
+
+SURVEY_OPTIONS TABLE:
+  id (char(36)) NOT NULL [PRI] 
+  survey_id (char(36)) NOT NULL [MUL] 
+  label (varchar(255)) NOT NULL  
+  description (text) NULL  
+  value (varchar(255)) NOT NULL  
+  metadata (json) NULL  
+
+OPTION_CAPACITY TABLE:
+  option_id (char(36)) NOT NULL [PRI] 
+  total_capacity (int) NOT NULL  DEFAULT 0
+  reserved_count (int) NOT NULL  DEFAULT 0
+  filled_count (int) NOT NULL  DEFAULT 0
+  updated_at (datetime) NULL  DEFAULT CURRENT_TIMESTAMP
+

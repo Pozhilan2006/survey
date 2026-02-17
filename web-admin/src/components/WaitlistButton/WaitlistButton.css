@@ -1,0 +1,205 @@
+/* Waitlist Button Styles */
+
+.waitlist-join,
+.waitlist-status,
+.waitlist-notified {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.waitlist-error {
+    padding: 8px 12px;
+    background: #ffebee;
+    border: 1px solid #ef5350;
+    border-radius: 4px;
+    color: #c62828;
+    font-size: 13px;
+}
+
+/* Join Button */
+.btn-join-waitlist {
+    padding: 10px 20px;
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-join-waitlist:hover:not(:disabled) {
+    background: #f57c00;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+}
+
+.btn-join-waitlist:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Waitlist Status */
+.waitlist-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fff3e0;
+    border: 2px solid #ff9800;
+    border-radius: 8px;
+}
+
+.waitlist-icon {
+    font-size: 24px;
+}
+
+.waitlist-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.waitlist-position {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e65100;
+}
+
+.waitlist-label {
+    font-size: 12px;
+    color: #666;
+}
+
+.btn-leave-waitlist {
+    padding: 8px 16px;
+    background: white;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-leave-waitlist:hover:not(:disabled) {
+    border-color: #999;
+    color: #333;
+}
+
+.btn-leave-waitlist:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Notified Status */
+.notification-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+    border-radius: 8px;
+    color: white;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+}
+
+.notification-icon {
+    font-size: 28px;
+    animation: ring 1s ease-in-out infinite;
+}
+
+@keyframes ring {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    10%,
+    30% {
+        transform: rotate(-10deg);
+    }
+
+    20%,
+    40% {
+        transform: rotate(10deg);
+    }
+}
+
+.notification-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.notification-content strong {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.expiry-info {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.btn-claim {
+    padding: 12px 24px;
+    background: white;
+    color: #4caf50;
+    border: 2px solid white;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-claim:hover:not(:disabled) {
+    background: #f1f8f4;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-claim:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .waitlist-info {
+        padding: 10px 12px;
+    }
+
+    .waitlist-icon {
+        font-size: 20px;
+    }
+
+    .waitlist-position {
+        font-size: 16px;
+    }
+
+    .notification-banner {
+        padding: 12px;
+    }
+
+    .notification-icon {
+        font-size: 24px;
+    }
+}

@@ -42,6 +42,8 @@ export class RuleParser {
             'QUOTA_AVAILABLE',
             'HAS_ROLE',
             'METADATA_MATCH',
+            'YEAR_EQUALS',
+            'DEPARTMENT_EQUALS',
             'CUSTOM'
         ];
 
@@ -88,9 +90,36 @@ export class RuleParser {
             case 'CUSTOM':
                 return this.parseCustomOperator(node);
 
+            case 'YEAR_EQUALS':
+                return this.parseYearEquals(node);
+
+            case 'DEPARTMENT_EQUALS':
+                return this.parseDepartmentEquals(node);
+
             default:
                 throw new Error(`Unhandled rule type: ${rule}`);
         }
+    }
+
+    parseYearEquals(node) {
+        if (!node.value) {
+            throw new Error('YEAR_EQUALS operator requires "value" property');
+        }
+        return {
+            rule: 'YEAR_EQUALS',
+            value: node.value,
+            operator: node.operator || 'equals' // optional, default equals
+        };
+    }
+
+    parseDepartmentEquals(node) {
+        if (!node.value) {
+            throw new Error('DEPARTMENT_EQUALS operator requires "value" property');
+        }
+        return {
+            rule: 'DEPARTMENT_EQUALS',
+            value: node.value
+        };
     }
 
     parseLogicalOperator(operator, node) {

@@ -9,11 +9,13 @@ import { startBackgroundJobs } from './utils/backgroundJobs.js';
 // Load environment variables
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 async function startServer() {
     try {
+        console.log('DIRNAME:', import.meta.url);
+        console.log('CWD:', process.cwd());
         // Initialize database connection
         logger.info('Initializing database connection...');
         await initializeDatabase();

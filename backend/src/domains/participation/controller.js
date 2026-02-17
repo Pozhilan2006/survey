@@ -155,6 +155,25 @@ class ParticipationController {
     }
 
     /**
+     * Get student dashboard with eligible surveys
+     */
+    async getDashboard(req, res, next) {
+        try {
+            const userId = req.user.id;
+
+            const dashboard = await this.service.getDashboard(userId);
+
+            res.json({
+                success: true,
+                data: dashboard
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
      * Get user's participations
      */
     async getUserParticipations(req, res, next) {
@@ -236,6 +255,24 @@ class ParticipationController {
                     type: 'UNKNOWN',
                     message: 'Unknown state'
                 };
+        }
+    }
+
+    /**
+     * Get user's commitments (all submissions with details)
+     * GET /api/v1/participation/my-commitments
+     */
+    async getMyCommitments(req, res, next) {
+        try {
+            const userId = req.user.id;
+            const result = await this.service.getUserCommitments(userId);
+
+            res.json({
+                success: true,
+                data: result
+            });
+        } catch (error) {
+            next(error);
         }
     }
 }

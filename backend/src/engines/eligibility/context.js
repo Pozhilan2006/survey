@@ -65,7 +65,25 @@ export class ContextBuilder {
             throw new Error(`User not found: ${userId}`);
         }
 
-        return rows[0];
+        // Parse profile if it's a string (mysql2 usually handles JSON columns, but safety first)
+        const profile = typeof rows[0].profile === 'string'
+            ? JSON.parse(rows[0].profile || '{}')
+            : (rows[0].profile || {});
+
+        const user = {
+            ...rows[0],
+            profile,
+            // Normalize metadata for easier access in rules
+            metadata: {
+                ...(rows[0].metadata ? (typeof rows[0].metadata === 'string' ? JSON.parse(rows[0].metadata) : rows[0].metadata) : {}),
+                year: profile.year,
+                department: profile.department,
+                section: profile.section,
+                batch: profile.batch
+            }
+        };
+
+        return user;
     }
 
     /**
@@ -109,41 +127,13 @@ export class ContextBuilder {
      * Fetch user's documents for this release
      */
     async fetchUserDocuments(userId, releaseId) {
-        // MySQL NULL handling: release_id IS NULL OR release_id = ?
+        // Fetch all user documents
         const [rows] = await this.db.query(
-            `SELECT 
-         d.*
-       FROM documents d
-       WHERE d.user_id = ? 
-         AND (d.storage_path = ? OR 1=1) -- Temporary fix if logic incorrect, but original was (release_id = ? OR IS NULL)
-         -- The schema has release_id? Wait, documents table in 001_initial_schema_mysql.sql DOES NOT HAVE release_id column!
-         -- Create Schema 001... documents table: id, user_id, type, status, storage_path, mime_type, verified_at, etc.
-         -- NO release_id column in documents table in my schema.
-         -- So fetchUserDocuments query will fail if I select it or filter by it.
-         -- I should check if documents are global or release specific.
-         -- Original code used release_id. Maybe I missed the column in schema migration?
-         -- Checking 001_initial_schema_mysql.sql content again...
-         `, [userId, releaseId]
-        );
-
-        // RE-READING schema:
-        // CREATE TABLE documents (
-        //    id CHAR(36) PRIMARY KEY,
-        //    user_id CHAR(36) NOT NULL,
-        //    ...
-        // No release_id.
-        // I should probably add it or assume global documents.
-        // User instruction: "Include all tables... documents"
-        // I probably missed a column if original had it.
-        // But for now, I'll remove the release_id filter to prevent crash, effectively making documents global.
-
-        // Correct query based on available columns:
-        const [actualRows] = await this.db.query(
             'SELECT * FROM documents WHERE user_id = ?',
             [userId]
         );
 
-        return actualRows;
+        return rows;
     }
 
     /**

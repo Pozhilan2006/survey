@@ -1,20 +1,21 @@
-import { query } from '../config/database.js';
-import { HOLD_STATUSES } from '../config/constants.js';
 import logger from './logger.js';
+import holdExpirationJob from '../jobs/holdExpiration.js';
 
-let cleanupInterval = null;
-
+/**
+ * Start all background jobs
+ */
 export function startBackgroundJobs() {
-    // Clean up expired holds every minute
-    const intervalMs = parseInt(process.env.HOLD_CLEANUP_INTERVAL_MS || '60000');
+    logger.info('Starting background jobs...');
 
-    cleanupInterval = setInterval(async () => {
-        await cleanupExpiredHolds();
-    }, intervalMs);
+    // Start hold expiration job
+    holdExpirationJob.start();
 
-    logger.info(`Background jobs started (interval: ${intervalMs}ms)`);
+    logger.info('All background jobs started');
 }
 
+/**
+ * Stop background jobs
+ */
 export function stopBackgroundJobs() {
     if (cleanupInterval) {
         clearInterval(cleanupInterval);
@@ -23,52 +24,94 @@ export function stopBackgroundJobs() {
     }
 }
 
+/**
+ * Clean up expired holds
+ * Runs every 60 seconds
+ * HARDENED: Batch processing (limit 50), FOR UPDATE locks, REPEATABLE READ isolation
+ */
 async function cleanupExpiredHolds() {
-    try {
-        // MySQL doesn't support UPDATE ... RETURNING
-        // So we select first, then update
+    const pool = getPool();
+    const connection = await pool.getConnection();
 
-        // 1. Find expired holds
-        const expiredHolds = await query(
-            `SELECT id, option_id, release_id, participation_id 
-             FROM option_holds 
-             WHERE status = ? AND expires_at < NOW()`,
-            [HOLD_STATUSES.ACTIVE]
+    try {
+        // HARDENING: Set isolation level
+        await connection.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        await connection.beginTransaction();
+
+        // HARDENING: Find expired holds in batches (limit 50 per cycle)
+        const [expiredHolds] = await connection.query(
+            `SELECT id, option_id, user_id FROM option_holds 
+             WHERE status = 'ACTIVE' AND expires_at < NOW()
+             LIMIT 50
+             FOR UPDATE`
         );
 
-        if (expiredHolds.length > 0) {
-            logger.info(`Found ${expiredHolds.length} expired holds`);
-
-            // 2. Update them to EXPIRED
-            const expiredIds = expiredHolds.map(h => h.id);
-            // Bulk update status
-            await query(
-                `UPDATE option_holds 
-                 SET status = ?, released_at = NOW() 
-                 WHERE id IN (?)`,
-                [HOLD_STATUSES.EXPIRED, expiredIds]
-            );
-
-            // 3. Release capacity for each
-            for (const hold of expiredHolds) {
-                await query(
-                    `UPDATE option_capacity
-                     SET reserved_count = GREATEST(0, reserved_count - 1)
-                     WHERE option_id = ?`,
-                    [hold.option_id]
-                );
-            }
-
-            // TODO: Notify waitlisted users if capacity now available
+        if (expiredHolds.length === 0) {
+            await connection.commit();
+            return;
         }
+
+        logger.info(`Cleaning up ${expiredHolds.length} expired holds`);
+
+        const holdIds = expiredHolds.map(h => h.id);
+
+        // 2. Delete expired holds
+        await connection.query(
+            `DELETE FROM option_holds WHERE id IN (?)`,
+            [holdIds]
+        );
+
+        // 3. HARDENING: Decrement reserved_count (never below zero)
+        for (const hold of expiredHolds) {
+            await connection.query(
+                `UPDATE option_capacity 
+                 SET reserved_count = GREATEST(0, reserved_count - 1) 
+                 WHERE option_id = ?`,
+                [hold.option_id]
+            );
+        }
+
+        // 4. Insert audit log
+        const auditId = uuidv4();
+        await connection.query(
+            `INSERT INTO audit_events
+             (id, user_id, action, resource_type, resource_id, details, created_at)
+             VALUES (?, NULL, ?, ?, NULL, ?, NOW())`,
+            [
+                auditId,
+                'SEAT_RELEASED',
+                'OPTION_HOLD',
+                JSON.stringify({
+                    count: expiredHolds.length,
+                    reason: 'Automatic cleanup - expired'
+                })
+            ]
+        );
+
+        await connection.commit();
+
+        logger.info(`Successfully cleaned up ${expiredHolds.length} expired holds`);
+
     } catch (error) {
+        await connection.rollback();
         logger.error('Failed to cleanup expired holds:', error);
-        // Fail-safe: prevent infinite crash loop if DB schema is still broken
-        if (error.code === 'ER_BAD_FIELD_ERROR' || error.message.includes('Unknown column')) {
+
+        // HARDENING: Fail-safe for constraint violations
+        if (error.code === 'ER_CHECK_CONSTRAINT_VIOLATED' ||
+            error.sqlState === '45000') {
+            logger.error('Capacity constraint violation during cleanup - data integrity preserved');
+        }
+
+        // Fail-safe: prevent infinite crash loop if DB schema is broken
+        if (error.code === 'ER_BAD_FIELD_ERROR' ||
+            error.code === 'ER_NO_SUCH_TABLE' ||
+            error.message?.includes('Unknown column')) {
             logger.error('CRITICAL: Schema mismatch detected. Pausing background jobs for 5 minutes.');
             stopBackgroundJobs();
             setTimeout(startBackgroundJobs, 5 * 60 * 1000);
         }
+    } finally {
+        connection.release();
     }
 }
 
